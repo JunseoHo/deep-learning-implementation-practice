@@ -1,3 +1,4 @@
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import torch
 import torch.nn as nn
 import numpy as np
@@ -162,3 +163,10 @@ with torch.no_grad():
     y_val = model(categorical_test_data)
     loss = loss_function(y_val, test_outputs)
 print(f"Loss: {loss:.8f}")
+
+y_val = np.argmax(y_val, axis=1)
+
+# 모델 성능 평가
+print(confusion_matrix(test_outputs, y_val))
+print(classification_report(test_outputs, y_val))
+print(accuracy_score(test_outputs, y_val))
