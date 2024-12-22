@@ -23,9 +23,12 @@ dataset.output.value_counts().plot(kind='pie',
 # plt.show()
 
 # print(dataset.dtypes)  # 기존의 데이터 dtype은 object로 출력된다.
+
+# dataset를 대상으로 그대로 for 문을 돌리면 결과 변수인 outputs도 포함되므로 별도로 예측 변수 리스트를 선언.
 categorical_columns = ['price', 'maint', 'doors', 'persons', 'lug_capacity', 'safety']
 for categorical_column in categorical_columns:
     dataset[categorical_column] = dataset[categorical_column].astype("category")
+
 # print(dataset.dtypes) # 형변환 이후 dtype은 category로 출력된다.
 
 # 데이터 세트의 값을 숫자로 인코딩된 넘파이 배열로 반환한다.
@@ -75,12 +78,42 @@ categorical_data = torch.tensor(categorical_data, dtype=torch.int64)
 # 결과 변수를 텐서로 변환.
 outputs = pd.get_dummies(dataset.output) # 범주형 변수를 더미 변수로 변환한다. 이 예제의 경우, 결과 변수의 범주 개수가 5개이므로 4개의 가변수로 변환된다.
 outputs = outputs.values
+
+"""
+
+이 시점에서 outputs은 아래와 같다.
+
+[[False False  True False]
+ [False False  True False]
+ [False False  True False]
+ ...
+ [False False  True False]
+ [False  True False False]
+ [False False False  True]]
+"""
+
 outputs = torch.tensor(outputs).flatten()
+
+"""
+
+flatten(평탄화)을 적용하였으므로 아래와 같이 1차원 텐서로 변환된다.
+
+tensor([False, False,  True,  ..., False, False,  True])
+
+"""
 
 # 각 카테고리의 고유값이 몇 개인지 추출.
 categorical_column_size = [len(dataset[categorical_column].cat.categories) for categorical_column in categorical_columns]
 # 각 카테고리의 임베딩 차원 수를 계산. (일반적으로 고유값의 개수를 2로 나눈 값을 사용한다. 단, 차원이 너무 많아지는 것을 방지하기 위해 min 함수 사용.)
 categorical_embedding_sizes = [(column_size, min(50, (column_size + 1) // 2)) for column_size in categorical_column_size]
+
+"""
+
+categorical_embedding_sizes는 다음과 같이 각 카테고리의 고유값 개수와 임베딩 차원 수로 구성된 튜플의 리스트이다.
+
+[(4, 2), (4, 2), (4, 2), (3, 2), (3, 2), (3, 2)]
+
+"""
 
 total_records = len(categorical_data)
 test_records = int(total_records * 0.2) # 전체 데이터 중 20%를 테스트 데이터로 사용한다.
@@ -91,11 +124,13 @@ categorical_test_data = categorical_data[total_records - test_records:total_reco
 train_outputs = outputs[:total_records - test_records]
 test_outputs = outputs[total_records - test_records:total_records]
 
-# 모델 구현현
+# 모델 구현
 class Model(nn.Module): # 클래스로 구현되는 모델은 nn.Module을 상속 받는다.
     # __init__은 모델에서 사용할 파라미터와 신경망 초기화를 위해 선언한다.
+    # embedding_size: 각 카테고리의 임베딩 사이즈.
     def __init__(self, embedding_size, output_size, layers, p=0.4): # p는 드롭아웃 값이며 기본 값은 0.5이다.
         super().__init__()
+        
         self.all_embeddings = nn.ModuleList([nn.Embedding(ni, nf) for ni, nf in embedding_size])
         self.embedding_dropout = nn.Dropout(p)
 
