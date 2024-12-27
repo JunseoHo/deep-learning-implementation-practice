@@ -44,3 +44,15 @@ print("### Leaky ReLU ###")
 leaky_relu = nn.LeakyReLU()  # LeakyReLU 인스턴스 생성, 리키 렐루는 별도의 함수로는 제공되지 않는다. 
 x = torch.tensor([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]).float()
 print(f"[-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5] -> {leaky_relu(x)}")
+
+
+"""
+
+소프트맥스는 입력 값을 [0, 1] 사이로 정규화하여 출력 값의 총합이 항상 1이 되도록 변환한다.
+보통 출력층의 활성화 함수로 많이 채택된다.
+
+"""
+
+softmax = nn.Softmax(dim=0)
+print(f"[-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5] -> {softmax(x)}")
+print(f"Sum of all element: {softmax(x).sum()}")    # 부동소수점 표현으로 인해 정확히 1이 나오지는 않는다.
