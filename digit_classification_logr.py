@@ -1,7 +1,9 @@
 from sklearn.datasets import load_digits
+from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 """
@@ -54,6 +56,15 @@ print(logisticRegr.predict(X_test[0].reshape(1, -1)))
 print(logisticRegr.predict(X_test[0:10]))
 
 # 모델 성능 평가
-print(f"Accuracy: {logisticRegr.score(X_test, y_test)}")
+pred = logisticRegr.predict(X_test)
+score = logisticRegr.score(X_test, y_test)
+print(f"Accuracy: {score}")
 
+cm = metrics.confusion_matrix(y_test, pred)
+plt.figure(figsize=(9, 9))
+sns.heatmap(cm, annot=True, fmt='.3f', linewidths=.5, square=True, cmap='Blues_r')
+plt.ylabel('Actual label')
+plt.xlabel('Preducted label')
+plt.title('Accuracy Score: {0}'.format(score))
+# plt.show()  # 히트맵의 값은 분류된 이미지의 개수이다
 
