@@ -1,4 +1,6 @@
 from sklearn.datasets import load_digits
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -39,5 +41,19 @@ for index, (image, label) in enumerate(zip(digits.data[0:5], digits.target[0:5])
     plt.subplot(1, 5, index + 1)
     plt.imshow(np.reshape(image, (8, 8)), cmap=plt.cm.gray)
     plt.title('Training: %i\n' % label, fontsize=20)
-plt.show()
+# plt.show()
+
+X_train, X_test, y_train, y_test = train_test_split(digits.data, digits.target, test_size=0.25, random_state=0)
+
+# 모델 학습
+logisticRegr = LogisticRegression(max_iter=2000)    # max_iter가 너무 낮으면 STOP: TOTAL NO. of ITERATIONS REACHED LIMIT. 라는 에러가 발생한다. 즉, 학습 결과가 반복 횟수 내에서 수렴하지 않았다는 것.
+logisticRegr.fit(X_train, y_train)
+
+# 모델 테스트
+print(logisticRegr.predict(X_test[0].reshape(1, -1)))
+print(logisticRegr.predict(X_test[0:10]))
+
+# 모델 성능 평가
+print(f"Accuracy: {logisticRegr.score(X_test, y_test)}")
+
 
