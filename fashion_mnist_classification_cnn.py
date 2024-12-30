@@ -58,26 +58,7 @@ for i in range(1, columns * rows + 1):
 class FashionDNN(nn.Module):
     def __init__(self):
         super(FashionDNN, self).__init__()
-        self.fc1 = nn.Linear(in_features=784, out_features=256)
-
-        """
-        
-        nn.Dropout은 텐서의 원소 중 p 비율만큼은 0으로 만들고 나머지는 '1 / (1 - p)'를 곱해 스케일링한다.
-
-        예를 들어 p=0.2인 드롭아웃이 적용되는 과정을 살펴보자.
-
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-        여기서 임의로 5와 9가 선택되어 0으로 바뀌었다.
-
-        [1, 2, 3, 4, 0, 6, 7, 8, 0, 10]
-        
-        그리고 선택된 5와 9 외의 원소에는 '1 / (1 - 0.2) = 1.25'를 곱하는 것이다.
-
-        [1.25, 2.5, 3.75, 6.0, 0, 7.5, 8.75, 10.0, 0, 12.5]  -> 드롭아웃이 적용된 최종 결과
-
-        """
-
+        self.fc1 = nn.Linear(in_features=784, out_features=256) # fc는 Fully Connected의 약자다.
         self.drop = nn.Dropout(0.25)
         self.fc2 = nn.Linear(in_features=256, out_features=128)
         self.fc3 = nn.Linear(in_features=128, out_features=10)
@@ -103,7 +84,7 @@ learning_rate = 0.001
 model = FashionDNN()
 model.to(device)
 
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss()   # 분류 문제이므로 CEE를 사용한다.
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 # print(model)
@@ -117,14 +98,23 @@ predictions_list = []
 labels_list = []
 
 for epoch in range(num_epochs):
-    for images, labels in train_loader:
+    for images, labels in train_loader: # 반복자를 통해 모든 배치에 대해 순회한다
         images, labels = images.to(device), labels.to(device)
+
+        """
+        
+        아래 view함수의 두번째 매개변수는 채널의 개수를 의미한다. FashionMnist는 흑백이므로 채널이 1개이다.
+        참고로 채널의 위치는 프레임워크마다 관례가 다르다.
+        파이토치는 두번째 두는 것이 관례이며 텐서플로우는 마지막에 두는 것이 관례이다.
+        즉, 텐서플로우에서는 아래 채널의 위치가 맨 뒤로 옮겨져 (100, 28, 28, 1)이 된다.
+        
+        """
 
         train = Variable(images.view(100, 1, 28, 28))
         labels = Variable(labels)
 
-        outputs = model(train)
-        loss = criterion(outputs, labels)
+        outputs = model(train)  # 일단 데이터를 넣어서 모델을 한번 돌려본다.
+        loss = criterion(outputs, labels) # 모델의 결과와 레이블의 차이를 CEE로 비교.
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
